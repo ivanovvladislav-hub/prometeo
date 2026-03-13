@@ -130,8 +130,8 @@ jobs:
       - name: 🏗️ Build Frontend image
         uses: docker/build-push-action@v5
         with:
-          context: /var/www/prometeo
-          file: /var/www/prometeo/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: false
           tags: prometeo-frontend:test
           cache-from: type=gha
