@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: prometeo-postgres
+    environment:
+      POSTGRES_USER: prometeo_user
+      POSTGRES_PASSWORD: StrongPass123!
+      POSTGRES_DB: prometeo_meta
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prometeo_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Наш бэкенд на FastAPI
+  backend:
+    build: ./backend
+    container_name: prometeo-api
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: prometeo_user
+      POSTGRES_PASSWORD: StrongPass123!
+      POSTGRES_DB: prometeo_meta
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 9000
+      CLICKHOUSE_DB: prometeo_data
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Наш фронтенд на Nginx
+  frontend:
+    build: /var/www/prometeo
+    container_name: prometeo-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+# Тома для хранения данных базы
+volumes:
+  postgres_data:
