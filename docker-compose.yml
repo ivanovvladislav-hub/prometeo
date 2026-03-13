@@ -40,7 +40,7 @@ services:
 
   # Наш фронтенд на Nginx
   frontend:
-    build: /var/www/prometeo
+    build: ./frontend
     container_name: prometeo-frontend
     ports:
       - "80:80"
