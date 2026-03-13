@@ -6,6 +6,7 @@ from app.config import settings
 from app.models.database import init_postgres, close_postgres
 from app.routers import metrics, stats  # добавил metrics
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -27,12 +28,13 @@ async def lifespan(app: FastAPI):
     # close_clickhouse() - временно отключено
     print("👋 Goodbye!")
 
+
 # Создание приложения FastAPI
 app = FastAPI(
     title=settings.app_title,
     version=settings.app_version,
     description="API для сбора и аналитики метрик с IoT-датчиков",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware (чтобы фронтенд мог обращаться к API)
@@ -46,7 +48,8 @@ app.add_middleware(
 
 # Подключение роутеров
 app.include_router(metrics.router)  # включено
-app.include_router(stats.router)    # включено
+app.include_router(stats.router)  # включено
+
 
 # Главная страница (проверка работоспособности)
 @app.get("/")
@@ -54,8 +57,9 @@ async def root():
     return {
         "message": "Prometeo API is running",
         "version": settings.app_version,
-        "docs": "/docs"
+        "docs": "/docs",
     }
+
 
 # Health check эндпоинт (для мониторинга)
 @app.get("/health")

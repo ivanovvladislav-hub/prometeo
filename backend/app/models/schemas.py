@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 
+
 # Схема для приёма данных от одного датчика
 class MetricCreate(BaseModel):
     sensor_id: int = Field(..., description="ID датчика из БД")
@@ -13,13 +14,15 @@ class MetricCreate(BaseModel):
             "example": {
                 "sensor_id": 1,
                 "value": 23.5,
-                "timestamp": "2026-01-23T09:00:00"
+                "timestamp": "2026-01-23T09:00:00",
             }
         }
+
 
 # Схема для массовой загрузки (batch)
 class MetricBatch(BaseModel):
     metrics: list[MetricCreate]
+
 
 # Схема для ответа API (статистика)
 class StatisticsResponse(BaseModel):
@@ -31,6 +34,7 @@ class StatisticsResponse(BaseModel):
     period_start: datetime
     period_end: datetime
 
+
 # Схема для информации о датчике (из PostgreSQL)
 class SensorInfo(BaseModel):
     id: int
@@ -38,4 +42,3 @@ class SensorInfo(BaseModel):
     location: str
     sensor_type: str
     is_active: bool
-
