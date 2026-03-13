@@ -1,3 +1,4 @@
+
 import asyncpg
 from clickhouse_driver import Client
 from app.config import settings
@@ -28,7 +29,6 @@ async def close_postgres():
 # clickhouse_client = None
 
 # def init_clickhouse():
-#     global clickhouse_client
 #     clickhouse_client = Client(
 #         host=settings.clickhouse_host,
 #         port=settings.clickhouse_port,
@@ -39,7 +39,6 @@ async def close_postgres():
 #     print(f"✅ ClickHouse connected: {result}")
 
 # def close_clickhouse():
-#     global clickhouse_client
 #     if clickhouse_client:
 #         clickhouse_client.disconnect()
 #         print("❌ ClickHouse disconnected")
