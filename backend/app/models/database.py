@@ -6,7 +6,6 @@ from app.config import settings
 postgres_pool = None
 
 async def init_postgres():
-    global postgres_pool
     postgres_pool = await asyncpg.create_pool(
         host=settings.postgres_host,
         port=settings.postgres_port,
