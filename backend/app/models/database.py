@@ -1,5 +1,6 @@
 import asyncpg
 from clickhouse_driver import Client
+
 from app.config import settings
 
 # Пул подключений к PostgreSQL

@@ -1,9 +1,10 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.config import settings
-from app.models.database import init_postgres, close_postgres
+from app.models.database import close_postgres, init_postgres
 from app.routers import metrics, stats  # добавил metrics
 
 
