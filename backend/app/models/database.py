@@ -23,20 +23,3 @@ async def close_postgres():
     if postgres_pool:
         await postgres_pool.close()
         print("❌ PostgreSQL connection pool closed")
-
-# Клиент ClickHouse (синхронный) - временно отключен
-# clickhouse_client = None
-
-# def init_clickhouse():
-#     clickhouse_client = Client(
-#         host=settings.clickhouse_host,
-#         port=settings.clickhouse_port,
-#         database=settings.clickhouse_db
-#     )
-#     result = clickhouse_client.execute("SELECT 1")
-#     print(f"✅ ClickHouse connected: {result}")
-
-# def close_clickhouse():
-#     if clickhouse_client:
-#         clickhouse_client.disconnect()
-#         print("❌ ClickHouse disconnected")
