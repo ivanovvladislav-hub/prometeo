@@ -18,7 +18,6 @@ async def init_postgres():
     print("✅ PostgreSQL connection pool created")
 
 async def close_postgres():
-    global postgres_pool
     if postgres_pool:
         await postgres_pool.close()
         print("❌ PostgreSQL connection pool closed")
