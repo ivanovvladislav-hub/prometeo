@@ -1,0 +1,131 @@
+name: CD - Deploy to Docker Hub
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+env:
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  IMAGE_NAME_API: prometeo-api
+  IMAGE_NAME_FRONTEND: prometeo-frontend
+
+jobs:
+  
+  deploy-backend:
+    name: Deploy Backend to Docker Hub
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🏷️ Extract version from tag
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=latest" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: 🏗️ Build and Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+      
+      - name: ✅ Backend deployed
+        run: |
+          echo "Backend image pushed to Docker Hub!"
+          echo "Image: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:${{ steps.version.outputs.VERSION }}"
+
+  deploy-frontend:
+    name: Deploy Frontend to Docker Hub
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🏷️ Extract version from tag
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=latest" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: 🏗️ Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.VERSION }}
+            ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+      
+      - name: ✅ Frontend deployed
+        run: |
+          echo "Frontend image pushed to Docker Hub!"
+          echo "Image: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.VERSION }}"
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 📝 Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## 🎉 Prometeo ${{ github.ref_name }}
+            
+            ### Docker Images
+            - Backend: `docker pull ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_API }}:${{ github.ref_name }}`
+            - Frontend: `docker pull ${{ env.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.ref_name }}`
+            
+            ### Quick Start
+            ```bash
+            docker-compose pull
+            docker-compose up -d
